@@ -1,6 +1,6 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import scrollTo from '@/utils/scrollTo';
+import React, { useImperativeHandle, forwardRef, createRef } from 'react';
+import makeStyles from '@mui/styles/makeStyles';
+import scrollTo from '../utils/scrollTo';
 
 const useStyles = makeStyles({
   container: {
@@ -15,41 +15,34 @@ const useStyles = makeStyles({
   }
 });
 
-interface IContentProps {
-  children: JSX.Element;
+interface ContentProps {
+  children: React.ReactNode;
 }
 
-interface IContent
-  extends React.ForwardRefExoticComponent<
-    IContentProps & React.RefAttributes<IContentHandles>
-  > {
-  getElement: () => Element | null;
-}
-
-export interface IContentHandles {
+export interface ContentHandles {
   toTop: () => void;
+  getContainer: () => Element | null;
 }
 
-const Content = React.forwardRef<IContentHandles, IContentProps>(
-  (props, ref) => {
-    const classes = useStyles();
-    const containerRef = React.createRef<HTMLDivElement>();
+const Content = forwardRef<ContentHandles, ContentProps>((props, ref) => {
+  const classes = useStyles();
+  const containerRef = createRef<HTMLDivElement>();
 
-    Content.getElement = () => document.querySelector(`.${classes.container}`);
-
-    React.useImperativeHandle(ref, () => ({
-      toTop: () => {
-        if (containerRef.current) {
-          scrollTo(containerRef.current, 0, 900, 'easeInOutQuint');
-        }
+  useImperativeHandle(ref, () => ({
+    toTop: () => {
+      if (containerRef.current) {
+        scrollTo(containerRef.current, 0, 900, 'easeInOutQuint');
       }
-    }));
-    return (
-      <div ref={containerRef} className={classes.container}>
-        {props.children}
-      </div>
-    );
-  }
-) as IContent;
+    },
+    getContainer: () => {
+      return containerRef?.current;
+    }
+  }));
+  return (
+    <div ref={containerRef} className={classes.container}>
+      {props.children}
+    </div>
+  );
+});
 
 export default Content;

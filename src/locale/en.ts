@@ -16,6 +16,8 @@ export default {
   Logout: 'Logout',
   'Email Address / pixiv ID': 'Email Address / pixiv ID',
   Password: 'Password',
+  'Auth Token': 'Auth Token',
+  'Auth Token is Blank': 'Auth Token is Blank',
   Nickname: 'Nickname',
   'An error occurred. Check the URL or wait for a while and access again.':
     'An error occurred. Check the URL or wait for a while and access again.',
@@ -26,5 +28,8 @@ export default {
   Ranking: 'Ranking',
   HelpToTranslate: 'Help to Translate',
   'This page is not available in your area':
-    'This page is not available in your area.'
+    'This page is not available in your area.',
+  'Please sign in to continue': 'Please sign in to continue',
+  'Refresh page': 'Refresh page',
+  'API Server is upgrading': 'API Server is upgrading'
 };

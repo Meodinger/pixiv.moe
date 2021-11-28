@@ -17,6 +17,8 @@ export default {
   Logout: 'ログアウト',
   'Email Address / pixiv ID': 'メールアドレス / pixiv ID',
   Password: 'パスワード',
+  'Auth Token': '認証トークン',
+  'Auth Token is Blank': '認証トークンが未記入ですす',
   Nickname: 'ニックネーム',
   'An error occurred. Check the URL or wait for a while and access again.':
     'エラーが発生しました。URLを確認するか、しばらく時間を置いて再度アクセスしてください。',
@@ -27,5 +29,8 @@ export default {
   Ranking: 'ランキング',
   HelpToTranslate: '翻訳を手伝う',
   'This page is not available in your area':
-    'このページはお住まいの地域からご利用になれません。'
+    'このページはお住まいの地域からご利用になれません。',
+  'Please sign in to continue': '続行するにはログインしてください',
+  'Refresh page': 'ページの更新',
+  'API Server is upgrading': 'APIサーバーがアップグレード中'
 };

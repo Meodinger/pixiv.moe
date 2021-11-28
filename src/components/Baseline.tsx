@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles({
   '@global': {
@@ -92,7 +92,7 @@ const useStyles = makeStyles({
   }
 });
 
-const Baseline: React.FunctionComponent<{}> = props => {
+const Baseline: React.FC<{}> = props => {
   useStyles();
   return <>{props.children}</>;
 };

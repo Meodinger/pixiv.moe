@@ -2,6 +2,7 @@ import path from 'path';
 import webpack from 'webpack';
 import ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 import SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
+import ESLintPlugin from 'eslint-webpack-plugin';
 
 const config: webpack.Configuration = {
   output: {
@@ -13,20 +14,11 @@ const config: webpack.Configuration = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
     alias: {
-      '@': path.join(__dirname, '/../src')
+      '@images': path.join(__dirname, '/../src/images')
     }
   },
   module: {
     rules: [
-      {
-        test: /\.(tsx?|jsx?)$/,
-        enforce: 'pre',
-        include: path.join(__dirname, '/../src'),
-        loader: 'eslint-loader',
-        options: {
-          emitWarning: true
-        }
-      },
       {
         test: /\.tsx?$/,
         use: [
@@ -56,9 +48,18 @@ const config: webpack.Configuration = {
   plugins: [
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+      'process.env.PIXIV_API_ENTRY': JSON.stringify(
+        process.env.PIXIV_API_ENTRY
+      ),
+      'process.env.PIXIV_STRICT_MODE': JSON.stringify(
+        process.env.PIXIV_STRICT_MODE
+      )
     }),
     new ForkTsCheckerWebpackPlugin(),
+    new ESLintPlugin({
+      extensions: ['ts', 'tsx']
+    }),
     // @ts-ignore
     process.env.CI ? null : new SimpleProgressWebpackPlugin()
   ].filter(Boolean)

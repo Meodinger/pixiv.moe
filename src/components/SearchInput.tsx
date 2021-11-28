@@ -1,8 +1,9 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import EventListener from 'react-event-listener';
-import { Search as SearchIcon } from '@material-ui/icons';
-// import { Checkbox } from '@material-ui/core';
+import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import { useMount } from 'ahooks';
+import makeStyles from '@mui/styles/makeStyles';
+import { useKeyPress } from 'ahooks';
+import { Search as SearchIcon } from '@mui/icons-material';
+import { FormControlLabel, Switch } from '@mui/material';
 
 const useStyles = makeStyles({
   searchRoot: {
@@ -30,7 +31,7 @@ const useStyles = makeStyles({
     position: 'absolute',
     alignItems: 'center',
     pointerEvents: 'none',
-    justifyContent: 'center'
+    marginLeft: 10
   },
   searchInput: {
     font: 'inherit',
@@ -41,7 +42,7 @@ const useStyles = makeStyles({
     },
     border: 0,
     margin: 0,
-    padding: '8px 8px 8px 72px',
+    padding: '8px 8px 8px 45px',
     outline: 0,
     display: 'block',
     background: 'none',
@@ -57,50 +58,99 @@ const useStyles = makeStyles({
     fontSize: 14,
     display: 'none',
     boxShadow:
-      '0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12)'
+      '0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12)',
+    zIndex: 99
   }
 });
 
-interface ISearchInputProps {
+interface SearchInputProps {
   onSearch: (value: string) => void;
-  isSearchByPopularity: boolean;
+  onOptionsChange: (options: SearchOptions) => void;
+  searchOptions: SearchOptions;
 }
 
-const SearchInput: React.FunctionComponent<ISearchInputProps> = props => {
-  const classes = useStyles();
-  const inputRef = React.useRef<HTMLInputElement>(null);
+export interface SearchInputHandles {
+  setValue: (value: string) => void;
+}
 
-  const onSearch = () => {
-    if (inputRef.current) {
-      props.onSearch(inputRef.current.value);
-    }
-  };
+export interface SearchOptions {
+  xRestrict: boolean;
+}
 
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.keyCode === 13 && document.activeElement === inputRef.current) {
-      inputRef?.current?.focus();
-      onSearch();
-    }
-  };
+type SearchOptionsKeys = keyof SearchOptions;
 
-  return (
-    <div className={classes.searchRoot}>
-      <div className={classes.search}>
-        <SearchIcon />
+const SearchInput = forwardRef<SearchInputHandles, SearchInputProps>(
+  (props, ref) => {
+    const classes = useStyles();
+    const inputRef = useRef<HTMLInputElement>(null);
+    const switchRef = useRef<HTMLButtonElement>(null);
+
+    useMount(() => {
+      if (props.searchOptions.xRestrict) {
+        switchRef.current?.click();
+      }
+    });
+
+    const onSearch = () => {
+      if (inputRef.current) {
+        props.onSearch(inputRef.current.value);
+      }
+    };
+
+    const onSwitchChange = (
+      key: SearchOptionsKeys,
+      event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+      const { searchOptions } = { ...props };
+      searchOptions[key] = event.target.checked;
+      props.onOptionsChange(searchOptions);
+    };
+
+    useKeyPress(
+      'enter',
+      () => {
+        inputRef?.current?.blur();
+        onSearch();
+      },
+      {
+        target: inputRef.current
+      }
+    );
+
+    useImperativeHandle(ref, () => ({
+      setValue: (value: string) => {
+        if (inputRef.current) {
+          inputRef.current.value = value;
+        }
+      }
+    }));
+
+    return (
+      <div className={classes.searchRoot}>
+        <div className={classes.search}>
+          <SearchIcon />
+        </div>
+        <input ref={inputRef} className={classes.searchInput} />
+        {process.env.NODE_ENV === 'development' && (
+          <div className={classes.searchOptionCheckbox}>
+            <FormControlLabel
+              style={{ marginLeft: 0 }}
+              control={
+                <Switch
+                  ref={switchRef}
+                  onChange={event => onSwitchChange('xRestrict', event)}
+                  name="xRestrict"
+                  color="primary"
+                />
+              }
+              label="R-18"
+            />
+          </div>
+        )}
       </div>
-      <input ref={inputRef} className={classes.searchInput} />
-      {/* <div className={classes.searchOptionCheckbox}>
-          <Checkbox
-            onClick={() => this.props.onCheckBoxChange()}
-            checked={this.props.isSearchByPopularity}
-            color="primary"
-          />
-          <span>Search by popularity tags</span>
-        </div> */}
-      <EventListener target="window" onKeyDown={onKeyDown} />
-    </div>
-  );
-};
+    );
+  }
+);
 
 SearchInput.defaultProps = {
   onSearch() {}

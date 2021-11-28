@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 
 export const useStyles = makeStyles({
   message: {
@@ -31,12 +31,12 @@ export const useStyles = makeStyles({
   }
 });
 
-interface IMessageProps {
+interface MessageProps {
   code?: number;
   text: string;
 }
 
-const Message: React.FunctionComponent<IMessageProps> = props => {
+const Message: React.FC<MessageProps> = props => {
   const classes = useStyles();
 
   return props.code ? (

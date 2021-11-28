@@ -1,10 +1,13 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import React, { useState, useContext } from 'react';
+import makeStyles from '@mui/styles/makeStyles';
 import { useIntl } from 'react-intl';
-import Loading from '@/components/Loading';
-import Message from '@/components/Message';
-import * as api from '@/utils/api';
-import Storage from '@/utils/Storage';
+import useAsyncEffect from 'use-async-effect';
+import supportsWebP from 'supports-webp';
+import Loading from './Loading';
+import Message from './Message';
+import { SocketContext } from './SocketContext';
+import * as api from '../utils/api';
+import Storage from '../utils/Storage';
 
 const useStyles = makeStyles({
   loading: {
@@ -16,24 +19,52 @@ const useStyles = makeStyles({
   }
 });
 
-const SessionContext: React.FunctionComponent<{}> = props => {
+const SessionContext: React.FC<{}> = props => {
   const classes = useStyles();
   const intl = useIntl();
-  const [token, setToken] = React.useState('');
-  const [loading, setLoading] = React.useState(true);
+  const socket = useContext(SocketContext);
+  const [token, setToken] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(
+    intl.formatMessage({
+      id: 'This page is not available in your area'
+    })
+  );
 
-  React.useEffect(() => {
-    api
-      .session()
-      .then(data => {
-        console.log(data);
-        setToken(data.response.access_token);
-        Storage.set('token', data.response.access_token);
-        api.refreshToken();
-      })
-      .finally(() => {
+  useAsyncEffect(async () => {
+    try {
+      const data = await api.session();
+      setToken(data.response.access_token);
+      Storage.set('token', data.response.access_token);
+      api.refreshToken();
+      const channelsData = await api.channels();
+      const channels: { [key: string]: string } =
+        channelsData.response.channels;
+      socket.emit(channels.PIXIV_ONLINE, data.response.access_token);
+      socket.on(channels.PIXIV_ONLINE_DONE, () => {
         setLoading(false);
       });
+      socket.on(channels.PIXIV_ONLINE_COUNT, onlineCount => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('debug: online clients', onlineCount);
+        }
+      });
+      if (await supportsWebP) {
+        document.body.classList.add('supports-webp');
+      } else {
+        document.body.classList.add('not-supports-webp');
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err instanceof api.APIError) {
+        setMessage(err.message);
+      } else if (
+        err instanceof TypeError &&
+        err.message === 'Failed to fetch'
+      ) {
+        setMessage('Failed to fetch');
+      }
+    }
   }, []);
 
   if (loading) {
@@ -46,14 +77,13 @@ const SessionContext: React.FunctionComponent<{}> = props => {
   if (token) {
     return <>{props.children}</>;
   }
-  return (
-    <Message
-      code={403}
-      text={intl.formatMessage({
-        id: 'This page is not available in your area'
-      })}
-    />
-  );
+
+  let code = 403;
+  const messageStart = String(message).substr(0, 3);
+  if (/^\d+$/.test(messageStart)) {
+    code = Number(messageStart);
+  }
+  return <Message code={code} text={message} />;
 };
 
 export default SessionContext;

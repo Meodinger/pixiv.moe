@@ -1,9 +1,9 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import { Link } from 'react-router-dom';
-import Image from 'material-ui-image';
-import StarIcon from '@material-ui/icons/Star';
-import * as api from '@/utils/api';
+import StarIcon from '@mui/icons-material/Star';
+import Image from './Image';
+import * as api from '../utils/api';
 
 const useStyles = makeStyles({
   cell: {
@@ -58,7 +58,7 @@ const useStyles = makeStyles({
   },
   meta: {
     lineHeight: 1,
-    padding: '0 0 1px',
+    padding: '0 0 7px',
     margin: '8px 0',
     fontSize: 10,
     '& span': {
@@ -99,13 +99,12 @@ const useStyles = makeStyles({
   }
 });
 
-interface IImageItemProps {
+interface ImageItemProps {
   item: any;
   index: number;
-  masonry: any;
 }
 
-const ImageItem: React.FunctionComponent<IImageItemProps> = props => {
+const ImageItem: React.FC<ImageItemProps> = props => {
   const classes = useStyles();
 
   const onImageMouseMove = (event: React.MouseEvent) => {

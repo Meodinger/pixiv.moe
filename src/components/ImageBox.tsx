@@ -1,11 +1,11 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import React, { useState } from 'react';
+import makeStyles from '@mui/styles/makeStyles';
 import Img from 'react-image';
 import isMobile from 'is-mobile';
-import Hotkeys from 'react-hot-keys';
-import { Chip } from '@material-ui/core';
-import Loading from '@/components/Loading';
-import * as api from '@/utils/api';
+import { useKeyPress } from 'ahooks';
+import { Chip } from '@mui/material';
+import Loading from './Loading';
+import * as api from '../utils/api';
 
 const useStyles = makeStyles({
   root: {
@@ -60,8 +60,8 @@ const useStyles = makeStyles({
     backfaceVisibility: 'hidden',
     top: 0,
     height: '20vh',
-    cursor: `url(${require('@/images/prev.cur').default}) 9 0, url(${
-      require('@/images/prev.cur').default
+    cursor: `url(${require('@images/prev.cur').default}) 9 0, url(${
+      require('@images/prev.cur').default
     }), pointer`,
     margin: 0,
     padding: 0,
@@ -83,8 +83,8 @@ const useStyles = makeStyles({
     opacity: 0,
     pointerEvents: 'auto',
     height: '40vh',
-    cursor: `url(${require('@/images/next.cur').default}) 9 15, url(${
-      require('@/images/next.cur').default
+    cursor: `url(${require('@images/next.cur').default}) 9 15, url(${
+      require('@images/next.cur').default
     }), pointer`,
     top: 'calc(100% - 40vh)',
     margin: 0,
@@ -110,19 +110,22 @@ const useStyles = makeStyles({
   }
 });
 
-interface IImageBoxProps {
+interface ImageBoxProps {
   items: string[];
   index: number;
   onClose: () => void;
 }
 
-const ImageBox: React.FunctionComponent<IImageBoxProps> = props => {
+const ImageBox: React.FC<ImageBoxProps> = props => {
   const classes = useStyles();
-  const [index, setIndex] = React.useState(props.index);
+  const [index, setIndex] = useState(props.index);
 
   const onPrev = () =>
     setIndex((index + props.items.length - 1) % props.items.length);
   const onNext = () => setIndex((index + 1) % props.items.length);
+
+  useKeyPress(['up', 'left'], onPrev);
+  useKeyPress(['down', 'right'], onNext);
 
   if (!props.items[index]) {
     return null;
@@ -141,8 +144,6 @@ const ImageBox: React.FunctionComponent<IImageBoxProps> = props => {
             <button className={classes.prev} onClick={onPrev} />
             <button className={classes.next} onClick={onNext} />
           </div>
-          <Hotkeys keyName="left,up" onKeyDown={onPrev} />
-          <Hotkeys keyName="right,down" onKeyDown={onNext} />
         </>
       )}
       <div className={classes.toolbar}>

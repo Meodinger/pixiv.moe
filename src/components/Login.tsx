@@ -1,7 +1,7 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { Modal, Backdrop, Fade, Button, TextField } from '@material-ui/core';
-import { Clear as ClearIcon } from '@material-ui/icons';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
+import makeStyles from '@mui/styles/makeStyles';
+import { Modal, Backdrop, Fade, Button, TextField } from '@mui/material';
+import { Clear as ClearIcon } from '@mui/icons-material';
 import { useIntl } from 'react-intl';
 
 const useStyles = makeStyles({
@@ -17,6 +17,7 @@ const useStyles = makeStyles({
       'rgba(0, 0, 0, 0.24706) 0 14px 45px, rgba(0, 0, 0, 0.21961) 0 10px 18px',
     borderRadius: '2px',
     outline: '0 none',
+    zIndex: 9,
     '@media screen and (max-width: 600px)': {
       width: '18em'
     }
@@ -51,44 +52,55 @@ const useStyles = makeStyles({
   }
 });
 
-interface ILoginProps {
+interface LoginProps {
   onLoginClick: () => void;
   onLogoutClick: () => void;
   isSubmitting: boolean;
   authData: any;
 }
 
-export interface ILoginHandles {
+export interface LoginHandles {
   open: () => void;
   close: () => void;
   reset: () => void;
   getUsername: () => string;
   getPassword: () => string;
+  getAuthToken: () => string;
+  setAuthToken: (authToken: string) => void;
+  getAuthType: () => 'token' | 'password';
   getIsOpen: () => boolean;
 }
 
-const Login = React.forwardRef<ILoginHandles, ILoginProps>((props, ref) => {
+const Login = forwardRef<LoginHandles, LoginProps>((props, ref) => {
   const classes = useStyles();
   const intl = useIntl();
 
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [username, setUsername] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [authToken, setAuthToken] = useState('');
+  const [authType] = useState<'token' | 'password'>('token');
 
-  React.useImperativeHandle(ref, () => ({
+  useImperativeHandle(ref, () => ({
     open: () => setIsOpen(true),
     close: () => setIsOpen(false),
     reset: () => {
       setUsername('');
       setPassword('');
+      // setAuthToken('');
     },
     getUsername: () => username,
     getPassword: () => password,
+    getAuthToken: () => authToken,
+    setAuthToken: (authToken: string) => {
+      setAuthToken(authToken);
+    },
+    getAuthType: () => authType,
     getIsOpen: () => isOpen
   }));
 
   const renderContent = () => {
-    if (props.authData) {
+    if (props.authData && authType === 'password') {
       return (
         <>
           <div className={classes.avatar}>
@@ -110,25 +122,41 @@ const Login = React.forwardRef<ILoginHandles, ILoginProps>((props, ref) => {
     }
     return (
       <>
-        <TextField
-          onChange={event => setUsername(event.target.value)}
-          value={username}
-          label={intl.formatMessage({
-            id: 'Email Address / pixiv ID'
-          })}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          type="password"
-          onChange={event => setPassword(event.target.value)}
-          value={password}
-          label={intl.formatMessage({
-            id: 'Password'
-          })}
-          fullWidth
-          margin="normal"
-        />
+        {authType === 'password' && (
+          <>
+            <TextField
+              onChange={event => setUsername(event.target.value)}
+              value={username}
+              label={intl.formatMessage({
+                id: 'Email Address / pixiv ID'
+              })}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              type="password"
+              onChange={event => setPassword(event.target.value)}
+              value={password}
+              label={intl.formatMessage({
+                id: 'Password'
+              })}
+              fullWidth
+              margin="normal"
+            />
+          </>
+        )}
+        {authType === 'token' && (
+          <TextField
+            type="password"
+            onChange={event => setAuthToken(event.target.value)}
+            value={authToken}
+            label={intl.formatMessage({
+              id: 'Auth Token'
+            })}
+            fullWidth
+            margin="normal"
+          />
+        )}
         <div className={classes.footer}>
           <Button
             variant="contained"

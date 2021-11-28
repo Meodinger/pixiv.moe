@@ -1,8 +1,8 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import Img from 'react-image';
-import EmojiParser from '@/utils/EmojiParser';
-import * as api from '@/utils/api';
+import EmojiParser from '../utils/EmojiParser';
+import * as api from '../utils/api';
 
 const useStyles = makeStyles({
   listItem: {
@@ -56,11 +56,11 @@ const useStyles = makeStyles({
   }
 });
 
-interface ICommentProps {
+interface CommentProps {
   item: any;
 }
 
-const Comment: React.FunctionComponent<ICommentProps> = ({ item }) => {
+const Comment: React.FC<CommentProps> = ({ item }) => {
   const classes = useStyles();
   const badWords = [
     '墙',
@@ -93,18 +93,18 @@ const Comment: React.FunctionComponent<ICommentProps> = ({ item }) => {
       <span className={classes.main}>
         <div className={classes.avatar}>
           <Img
-            src={[api.proxyImage(item.user.profile_image_urls.medium)]}
+            src={[api.proxyImage(item.img)]}
             loader={
               <img src="data:image/gif;base64,R0lGODdhAQABAPAAAMPDwwAAACwAAAAAAQABAAACAkQBADs=" />
             }
           />
         </div>
         <span>
-          {item.user.name}
+          {item.user_name}
           <span
             className={classes.content}
             dangerouslySetInnerHTML={{
-              __html: EmojiParser.parse(item.comment)
+              __html: EmojiParser.parse(item.one_comment_comment)
             }}
           />
         </span>

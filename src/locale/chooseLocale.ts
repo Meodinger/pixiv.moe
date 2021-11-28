@@ -1,32 +1,10 @@
-import { Dispatch } from 'redux';
-import Storage from '@/utils/Storage';
-import * as LocaleActions from '@/actions/locale';
-import config from '@/config';
+import Storage from '../utils/Storage';
+import * as config from '../config';
 
-config.languages = [
-  {
-    name: '日本語',
-    value: 'ja',
-    messages: require('@/locale/ja').default
-  },
-  {
-    name: 'English',
-    value: 'en',
-    messages: require('@/locale/en').default
-  },
-  {
-    name: 'Bahasa Indonesia',
-    value: 'id',
-    messages: require('@/locale/id').default
-  },
-  {
-    name: '한국어',
-    value: 'ko',
-    messages: require('@/locale/ko').default
-  }
-];
-
-const chooseLocale = (language: string, dispatch: Dispatch) => {
+const chooseLocale = (
+  language: string,
+  setLocaleFunc?: (data: { lang: string; messages: any }) => void
+) => {
   const cachedLang = Storage.get('lang');
   let lang;
 
@@ -49,12 +27,16 @@ const chooseLocale = (language: string, dispatch: Dispatch) => {
 
   Storage.set('lang', isFallback ? 'ja' : lang);
 
-  dispatch(
-    LocaleActions.setLocale({
-      lang: isFallback ? 'ja' : lang,
-      messages
-    })
-  );
+  const settedLocale = {
+    lang: isFallback ? 'ja' : lang,
+    messages
+  };
+
+  if (setLocaleFunc) {
+    setLocaleFunc(settedLocale);
+  }
+
+  return settedLocale;
 };
 
 export default chooseLocale;

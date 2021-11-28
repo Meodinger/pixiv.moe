@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import ReactGA from 'react-ga';
 import { useLocation } from 'react-router-dom';
-import config from '@/config';
+import * as config from '../config';
 
 ReactGA.initialize(config.trackingID);
 
-const TrackPageView: React.FunctionComponent<{}> = props => {
+const TrackPageView: React.FC<{}> = props => {
   const location = useLocation();
 
   const track = () => {
@@ -16,11 +16,11 @@ const TrackPageView: React.FunctionComponent<{}> = props => {
       });
       ReactGA.pageview(pageLink);
     } else {
-      console.log(pageLink); // eslint-disable-line
+      console.log(`track page: ${pageLink}`);
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     track();
   }, [location.pathname]);
 
